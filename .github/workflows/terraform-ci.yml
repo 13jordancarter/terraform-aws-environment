@@ -3,8 +3,7 @@ name: Terraform CI
 on:
   workflow_dispatch:
 
-
-    push:
+  push:
     branches:
       - main
     paths:
@@ -30,6 +29,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Display GitHub context
+        run: |
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Branch: $GITHUB_REF"
+          echo "Event: $GITHUB_EVENT_NAME"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
