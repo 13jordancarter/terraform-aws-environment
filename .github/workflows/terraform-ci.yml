@@ -56,3 +56,6 @@ jobs:
 
       - name: Validate Terraform
         run: terraform validate
+
+      - name: Terraform Plan
+      - run: terraform plan -input=false
