@@ -97,11 +97,79 @@ To deploy, steps to complete this were running the terraform commands of init, f
 
 To remove the resources that were built by this terraform project, I ran the terraform destroy command. This checked the local state file for this project and removed any of the resources attached to this. 
 
-## Project Structure
+#####################################################
+
+## CI/CD Automation with GitHub Actions
+
+### Overview
+
+After building the AWS environment with Terraform, I expanded the project by implementing a CI/CD workflow using GitHub Actions.
+
+The goal was to automate Terraform code checks whenever changes were pushed to the GitHub repository. This helps identify formatting issues, configuration errors, and potential infrastructure changes before deployment.
+
+### Technologies Used
+
+- **GitHub Actions:** Automated CI/CD workflow execution.
+- **AWS IAM:** Managed permissions for GitHub Actions to access AWS resources.
+- **AWS OIDC:** Established secure authentication between GitHub Actions and AWS without storing long-term AWS access keys.
+- **YAML:** Defined the GitHub Actions workflow.
+
+### Workflow Configuration
+
+Created the following workflow file:
+.github/workflows/terraform-ci.yml
+
+Configured the workflow to execute when:
+- Terraform files are pushed to the main branch.
+- Pull requests are opened against the main branch.
+- The workflow is manually triggered.
+
+The workflow runs on a GitHub-hosted Ubuntu runner and performs the following steps:
+
+1. **Checkout Repository:** Retrieves the project files from GitHub.
+2. **Setup Terraform:** Installs and configures Terraform on the runner.
+3. **AWS Authentication:** Uses OpenID Connect (OIDC) to authenticate with AWS through an IAM role.
+4. **Terraform Formatting:** Runs `terraform fmt -check -recursive` to verify consistent formatting.
+5. **Terraform Initialization:** Runs `terraform init -backend=false` to initialize the Terraform configuration without configuring a remote backend.
+6. **Terraform Validation:** Runs `terraform validate` to check the configuration for errors.
+7. **Terraform Plan:** Runs `terraform plan -input=false` to review proposed infrastructure changes.
+
+### AWS Authentication and Security
+
+Configured an AWS IAM Identity Provider for GitHub Actions using:
+token.actions.githubusercontent.com
+
+
+Created an IAM role named:
+GitHubActionsTerraformRole
+
+
+Configured the role's trust policy to restrict access to the intended GitHub repository and branch.
+
+Used AWS OpenID Connect (OIDC) authentication instead of storing permanent AWS access keys in GitHub secrets.
+
+Configured IAM permissions needed for Terraform to read AWS infrastructure information, including EC2 descriptions and the public Amazon Linux AMI parameter through AWS Systems Manager (SSM).
+
+### Workflow Results
+
+Successfully configured and executed the GitHub Actions workflow.
+
+The workflow completed the Terraform formatting, initialization, validation, and planning stages successfully.
+
+This demonstrated the ability to:
+- Automate infrastructure code validation.
+- Integrate GitHub Actions with AWS.
+- Configure secure AWS authentication using OIDC.
+- Apply IAM permissions for automated workflows.
+- Identify and troubleshoot CI/CD pipeline errors.
+
+
+**Note:** This workflow performs automated validation and planning only. It does not automatically apply infrastructure changes. Terraform initialization uses `-backend=false`, so this is a learning and validation workflow rather than a production deployment pipeline with shared remote state.
 
 ## Project Structure
 
 terraform-aws-environment/
+├── .github/workflows/terraform-ci.yml
 ├── main.tf
 ├── providers.tf
 ├── variables.tf
@@ -110,6 +178,7 @@ terraform-aws-environment/
 ├── .terraform.lock.hcl
 └── README.md
 
+- .github/workflows/terraform-ci.yml - Defines steps for the Github actions to run automated steps specified. 
 
 - main.tf - Defines the AWS resources, including the VPC, subnet, internet gateway, route table, security group, and EC2 instance.
 
